@@ -71,14 +71,8 @@ def process_command(command: str):
         play_audio(random.choice(do))
         webbrowser.open("http://www.google.com")
 
-        # response = "Открываю браузер"
-        # va_speak(response)
-
     elif 'экзамен' in command:
         play_audio('D:/pyProjects/Makima/audio/commands/pizdec.wav')
-        # webbrowser.open("http://www.google.com")
-        # response = "Открываю браузер"
-        # va_speak(response)
 
     elif 'музыку' in command:
         play_audio(random.choice(do))
@@ -95,6 +89,14 @@ def process_command(command: str):
     elif 'ты' in command and 'молодец' in command:
 
         play_audio('audio/molodec.wav')
+
+    elif 'гугл' in command and 'поиск' in command:
+
+        play_audio(random.choice(do))
+        stroka = command
+        st_list = stroka.split()
+        search_str = " ".join(st_list[2::1])
+        webbrowser.open("https://www.google.com/search?q=" + f"{search_str}")
 
     else:
         play_audio(random.choice(again))
