@@ -1,39 +1,15 @@
 # TODO
-# запросы в гугле
+# запросы в гугле DONE
 # интерфейс
 
 import random
-import torch
-import sounddevice as sd
-import time
-from stt import va_listen
-import datetime
-import webbrowser
-from num2words import num2words
-from pvrecorder import PvRecorder
 import pvporcupine
-from sounds import play_audio
 
-# audio_folder = "D:/pyProjects/Makima/audio"
-greetings = ['audio/r1.wav', 'audio/r2.wav', 'audio/r3.wav']
-do = ['audio/commands/budetsdelano.wav', 'audio/commands/secundochku.wav', 'audio/commands/secundu.wav',
-      'audio/commands/vipolnyau.wav']
-again = ['audio/commands/esheraz.wav', 'audio/commands/neponyala.wav', 'audio/commands/takoinet.wav',]
+from stt import va_listen
+from pvrecorder import PvRecorder
+from commands import process_command
+from sounds import play_audio, greetings
 
-language = 'ru'
-model_id = 'v4_ru'
-sample_rate = 48000
-speaker = 'baya'
-put_accent = True
-put_yoo = True
-device = torch.device('cpu')
-text = 'Приветствую Данил! Сегодня я буду вашим голосовым помощником'
-
-model, _ = torch.hub.load(repo_or_dir='snakers4/silero-models',
-                                     model='silero_tts',
-                                     language=language,
-                                     speaker=model_id)
-model.to(device)  # gpu or cpu
 
 
 
@@ -47,64 +23,10 @@ porcupine = pvporcupine.create(
 recorder = PvRecorder(device_index=-1, frame_length=porcupine.frame_length)
 
 
-def va_speak(what: str):
-    audio = model.apply_tts(text=what,
-                            speaker=speaker,
-                            sample_rate=sample_rate)
-
-    sd.play(audio, sample_rate)
-    time.sleep(len(audio) / sample_rate + 1)
-    sd.stop()
-
-
-def process_command(command: str):
-    command = command.lower()
-
-    if 'время' in command:
-        now = datetime.datetime.now()
-        hours_text = num2words(now.hour, lang='ru')
-        minutes_text = num2words(now.minute, lang='ru')
-        play_audio('D:/pyProjects/Makima/audio/commands/seichas.wav')
-        response = f" {hours_text} часов {minutes_text} минут"
-        va_speak(response)
-    elif 'открой' in command and 'браузер' in command:
-        play_audio(random.choice(do))
-        webbrowser.open("http://www.google.com")
-
-    elif 'экзамен' in command:
-        play_audio('D:/pyProjects/Makima/audio/commands/pizdec.wav')
-
-    elif 'музыку' in command:
-        play_audio(random.choice(do))
-        webbrowser.open("https://open.spotify.com")
-
-    elif 'ютуб' in command:
-        play_audio(random.choice(do))
-        webbrowser.open("https://www.youtube.com")
-
-    elif 'руслан' in command:
-        webbrowser.open("https://pbs.twimg.com/media/FAUTjJ6UcAQma_j?format=jpg&name=small")
-        play_audio('audio/ruslan.wav')
-
-    elif 'ты' in command and 'молодец' in command:
-
-        play_audio('audio/molodec.wav')
-
-    elif 'гугл' in command and 'поиск' in command:
-
-        play_audio(random.choice(do))
-        stroka = command
-        st_list = stroka.split()
-        search_str = " ".join(st_list[2::1])
-        webbrowser.open("https://www.google.com/search?q=" + f"{search_str}")
-
-    else:
-        play_audio(random.choice(again))
-        # response = "Извините, я не понимаю эту команду"
-        # va_speak(response)
 
 
 def main():
+    play_audio('audio/greeting.wav')
     try:
         recorder.start()
         print('Listening for wake word...')
