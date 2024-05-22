@@ -39,18 +39,6 @@ model, _ = torch.hub.load(repo_or_dir='snakers4/silero-models',
 model.to(device)  # gpu or cpu
 
 
-def spoty_login(driver):
-    # Загрузка cookie из файла
-    with open("spotify_cookies.txt", 'r') as file:
-        cookies = json.load(file)
-
-        # Добавление cookie к текущей сессии браузера
-    for cookie in cookies:
-        driver.add_cookie(cookie)
-    # Обновление страницы, чтобы использовать загруженные файлы cookie
-    driver.refresh()
-
-
 def convert_numbers_to_words(text: str, lang: str = 'ru') -> str:
     def replace_number(match):
         number = match.group(0)
