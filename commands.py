@@ -7,10 +7,14 @@ import random
 import datetime
 import webbrowser
 import sounddevice as sd
-from stt import va_listen
-from g4f.client import Client
-from num2words import num2words
+from pycaw.api.endpointvolume import IAudioEndpointVolume
 
+from stt import va_listen
+
+from num2words import num2words
+from ctypes import cast, POINTER
+from comtypes import CLSCTX_ALL
+from pycaw.pycaw import AudioUtilities
 import config
 from sounds import again, do, play_audio
 
@@ -76,6 +80,22 @@ def va_speak(what: str):
     except ValueError as e:
         print(f"Error in TTS synthesis: {e}")
         va_speak("Произошла ошибка при синтезе речи")
+
+
+def get_volume():
+    devices = AudioUtilities.GetSpeakers()
+    interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
+    volume_interface = cast(interface, POINTER(IAudioEndpointVolume))
+    return volume_interface.GetMasterVolumeLevelScalar()
+
+
+def set_volume(volume):
+    if volume < 0:
+        volume = 0
+    devices = AudioUtilities.GetSpeakers()
+    interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
+    volume_interface = cast(interface, POINTER(IAudioEndpointVolume))
+    volume_interface.SetMasterVolumeLevelScalar(volume, None)
 
 
 def ask_chatgpt(question: str) -> str:
@@ -170,6 +190,42 @@ def process_command(command: str):
             os.chdir(base)
         else:
             print('нету')
+
+    elif 'ещё больше' in command:
+        play_audio(random.choice(do))
+        current_volume = get_volume()
+        new_volume = min(1.0, current_volume + 0.2)
+        set_volume(new_volume)
+
+    elif 'ещё меньше' in command:
+        play_audio(random.choice(do))
+        current_volume = get_volume()
+        new_volume = max(0.0, current_volume - 0.2)
+        set_volume(new_volume)
+
+    elif 'громче' in command:
+        play_audio(random.choice(do))
+        current_volume = get_volume()
+        new_volume = min(1.0, current_volume + 0.1)
+        set_volume(new_volume)
+
+    elif 'тише' in command:
+        play_audio(random.choice(do))
+        current_volume = get_volume()
+        new_volume = max(0.0, current_volume - 0.1)
+        set_volume(new_volume)
+
+    elif 'включи звук' in command:
+        play_audio(random.choice(do))
+        current_volume = get_volume()
+        new_volume = 0.7
+        set_volume(new_volume)
+
+    elif 'выключи звук' in command:
+        play_audio(random.choice(do))
+        current_volume = get_volume()
+        new_volume = 0
+        set_volume(new_volume)
 
     else:
         play_audio(random.choice(again))

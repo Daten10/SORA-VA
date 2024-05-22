@@ -11,7 +11,7 @@ import concurrent.futures
 from stt import va_listen
 from pvrecorder import PvRecorder
 from commands import process_command
-from sounds import play_audio, greetings
+from sounds import play_audio, greetings, privet
 
 
 # Настройки Porcupine
@@ -25,7 +25,7 @@ recorder = PvRecorder(device_index=-1, frame_length=porcupine.frame_length)
 
 
 def main():
-    play_audio('audio/greeting.wav')
+    play_audio(random.choice(privet))
     try:
         recorder.start()
         print('Listening for wake word...')
