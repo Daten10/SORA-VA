@@ -1,7 +1,8 @@
 # TODO
 # запросы в гугле DONE
+# прикрутить чатгпт DONE 80%
+# работа со спотифаем (вкл выкл треков, некст, ПОИСК И ЗАПУСК) DONE
 # работа с текстовыми файлами
-# прикрутить чатгпт
 # запуск приложений
 # интерфейс
 
@@ -13,7 +14,7 @@ from pvrecorder import PvRecorder
 from commands import process_command
 from sounds import play_audio, greetings, privet
 
-
+# from commands import test
 # Настройки Porcupine
 porcupine = pvporcupine.create(
     access_key='o3KmvBWPoF5Yv8XuqnzneJ3q8j2Xb2SCpvYTaclVJ6Rox1tT2+pC2A==',
@@ -25,6 +26,7 @@ recorder = PvRecorder(device_index=-1, frame_length=porcupine.frame_length)
 
 
 def main():
+    # test()
     play_audio(random.choice(privet))
     try:
         recorder.start()

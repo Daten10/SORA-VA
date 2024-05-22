@@ -5,10 +5,11 @@ import time
 import torch
 import random
 import datetime
+import pyperclip
 import webbrowser
 import sounddevice as sd
 from pycaw.api.endpointvolume import IAudioEndpointVolume
-
+import pyautogui as pg
 from stt import va_listen
 
 from num2words import num2words
@@ -17,6 +18,7 @@ from comtypes import CLSCTX_ALL
 from pycaw.pycaw import AudioUtilities
 import config
 from sounds import again, do, play_audio
+import json
 
 full_path = "C:/Users/User/Desktop/sora_test/"
 base = 'D:/pyProjects/Makima'
@@ -35,6 +37,18 @@ model, _ = torch.hub.load(repo_or_dir='snakers4/silero-models',
                                      language=language,
                                      speaker=model_id)
 model.to(device)  # gpu or cpu
+
+
+def spoty_login(driver):
+    # Загрузка cookie из файла
+    with open("spotify_cookies.txt", 'r') as file:
+        cookies = json.load(file)
+
+        # Добавление cookie к текущей сессии браузера
+    for cookie in cookies:
+        driver.add_cookie(cookie)
+    # Обновление страницы, чтобы использовать загруженные файлы cookie
+    driver.refresh()
 
 
 def convert_numbers_to_words(text: str, lang: str = 'ru') -> str:
@@ -96,6 +110,10 @@ def set_volume(volume):
     interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
     volume_interface = cast(interface, POINTER(IAudioEndpointVolume))
     volume_interface.SetMasterVolumeLevelScalar(volume, None)
+
+
+def type_russian_text(ru_text):
+    pyperclip.copy(ru_text)  # Копируем текст в буфер обмена
 
 
 def ask_chatgpt(question: str) -> str:
@@ -227,23 +245,62 @@ def process_command(command: str):
         new_volume = 0
         set_volume(new_volume)
 
-    else:
-        play_audio(random.choice(again))
+    elif 'пауза' in command:
+        webbrowser.open("https://open.spotify.com")
+        play_audio(random.choice(do))
+        time.sleep(4)
+        pg.press('space')
+
+    elif 'следующий трек' in command:
+        webbrowser.open("https://open.spotify.com")
+        play_audio(random.choice(do))
+        pg.hotkey('ctrl', 'right')
+
+    elif 'предыдущий трек' in command:
+        play_audio(random.choice(do))
+        pg.hotkey('ctrl', 'left')
+        pg.hotkey('ctrl', 'left')
+
+    elif 'включи трек' in command:
+        play_audio(random.choice(do))
+        webbrowser.open("https://open.spotify.com")
+        time.sleep(6)
+        stroka = command
+        words_to_remove = ["включи", "трек"]
+        for word in words_to_remove:
+            stroka = stroka.replace(word, "")
+        print(stroka)
+        ru_text = stroka
+        type_russian_text(ru_text)
+        pg.hotkey('ctrl', 'shift', 'l')
+        time.sleep(2)
+        pg.hotkey('ctrl', 'v')
+        time.sleep(3)
+        pg.click(453, 478)
+        time.sleep(1)
+        pg.click(1414, 472)
+
+    elif 'нейросеть' in command:
         response = "Вы хотите, чтобы я спросила ChatGPT?"
         play_audio('audio/chat.wav')
 
-        if response.endswith("Вы хотите, чтобы я спросила ChatGPT?"):
-            user_input = va_listen(timeout=10)  # Ожидание ответа пользователя в течение 10 секунд
-            if 'да' in user_input.lower():
-                play_audio(random.choice(do))
-                chatgpt_response = ask_chatgpt(command)
-                print(chatgpt_response)
-                va_speak(chatgpt_response)
+        user_input = va_listen(timeout=10)  # Ожидание ответа пользователя в течение 10 секунд
+        if 'да' in user_input.lower():
+            play_audio('audio/slushau.wav')
+            user_inp = va_listen(timeout=10)
+            command_str = user_inp
+            play_audio(random.choice(do))
+            chatgpt_response = ask_chatgpt(command_str)
+            print(chatgpt_response)
+            va_speak(chatgpt_response)
+        elif 'нет' in user_input.lower():
+            play_audio('audio/good.wav')
+        else:
+            play_audio(random.choice(again))
+    else:
+        play_audio(random.choice(again))
 
-            elif 'нет' in user_input.lower():
-                play_audio('audio/good.wav')
-            else:
-                play_audio(random.choice(again))
+# def test():
 
-        # response = "Извините, я не понимаю эту команду"
-        # va_speak(response)
+# 1414 472
+# 453 478
