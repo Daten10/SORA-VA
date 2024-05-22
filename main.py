@@ -1,16 +1,17 @@
 # TODO
 # запросы в гугле DONE
+# работа с текстовыми файлами
+# прикрутить чатгпт
+# запуск приложений
 # интерфейс
 
 import random
 import pvporcupine
-
+import concurrent.futures
 from stt import va_listen
 from pvrecorder import PvRecorder
 from commands import process_command
 from sounds import play_audio, greetings
-
-
 
 
 # Настройки Porcupine
@@ -23,26 +24,25 @@ porcupine = pvporcupine.create(
 recorder = PvRecorder(device_index=-1, frame_length=porcupine.frame_length)
 
 
-
-
 def main():
     play_audio('audio/greeting.wav')
     try:
         recorder.start()
         print('Listening for wake word...')
 
-        while True:
-            pcm = recorder.read()
-            keyword_index = porcupine.process(pcm)
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            while True:
+                pcm = recorder.read()
+                keyword_index = porcupine.process(pcm)
 
-            if keyword_index >= 0:
-                print('Wake word detected!')
+                if keyword_index >= 0:
+                    print('Wake word detected!')
+                    play_audio(random.choice(greetings))
 
-                play_audio(random.choice(greetings))
-                # va_speak("Как я могу помочь?")
-                command = va_listen(timeout=10)  # Ожидание команды в течение 10 секунд
-                if command:
-                    process_command(command)
+                    future = executor.submit(va_listen, timeout=10)
+                    command = future.result()
+                    if command:
+                        process_command(command)
 
     except KeyboardInterrupt:
         print('Stopping...')
